@@ -1,34 +1,17 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "./db";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { users } from "@/lib/db/schema";
+import { handleError } from "./utils";
 
-function passwordToSalt(password: string) {
-    const saltRounds = 10;
-    const hash = bcrypt.hashSync(password, saltRounds);
-    return hash;
-}
-
-async function getUserFromDb(username: string) {
+async function getUserFromDb(email: string) {
     const user = await db.query.users.findFirst({
-        where: eq(users.name, username)
+        where: eq(users.email, email)
     });
     return user;
-}
-
-async function addUserToDb(username: string, saltedPassword: string) {
-    const user = await db
-        .insert(users)
-        .values({
-            id: crypto.randomUUID(),
-            name: username,
-            password: saltedPassword
-        })
-        .returning();
-    return user.pop();
 }
 
 export const {
@@ -40,19 +23,20 @@ export const {
         CredentialsProvider({
             name: "Credentials",
             credentials: {
-                username: { label: "Username", type: "text", placeholder: "jsmith" },
+                email: { label: "Username", type: "text", placeholder: "jsmith" },
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials, req) {
-                let user = null;
-                const username = credentials.username as string;
+                const email = credentials.email as string;
                 const password = credentials.password as string;
 
-                if (!username || !password) {
+                if (!email || !password) {
                     return null;
                 }
 
-                user = await getUserFromDb(username);
+                const user = await getUserFromDb(email);
+
+                console.log("user", user);
 
                 if (user) {
                     if (!user.password) {
@@ -68,20 +52,19 @@ export const {
                 }
 
                 if (!user) {
-                    const saltedPassword = passwordToSalt(password);
-                    user = await addUserToDb(username, saltedPassword);
+                    class InvalidLoginError extends CredentialsSignin {
+                        code = "Invalid identifier or password";
+                    }
+                    throw new InvalidLoginError();
                 }
-
-                if (!user) {
-                    throw new Error("User was not found and could not be created.");
-                }
-
-                return user;
+                
+                return user
             }
         })
     ],
     callbacks: {
         async session({ session, user, token }: any) {
+            console.log("session", session, user, token);
             return session;
         }
     },

@@ -8,6 +8,13 @@
       "when": 1725191647321,
       "tag": "0000_aberrant_puff_adder",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1725209185669,
+      "tag": "0001_thick_stone_men",
+      "breakpoints": true
     }
   ]
 }

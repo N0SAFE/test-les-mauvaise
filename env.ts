@@ -1,7 +1,5 @@
 import zod from 'zod'
-import { loadEnvConfig } from "@next/env";
 
-loadEnvConfig(process.cwd())
 const publicEnv = {}
 
 const env = {

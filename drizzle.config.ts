@@ -1,5 +1,8 @@
 import { defineConfig } from "drizzle-kit";
 import { validateEnv } from "./env";
+import { loadEnvConfig } from "@next/env";
+
+loadEnvConfig(process.cwd())
 
 const env = validateEnv(process.env);
 

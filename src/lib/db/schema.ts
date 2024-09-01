@@ -8,11 +8,13 @@ import {
   
   export const users = sqliteTable("user", {
     id: text("id").notNull().primaryKey(),
-    name: text("name"),
     email: text("email"),
     emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
-    image: text("image"),
     password: text("password"),
+    whyHere: text("whyHere"),
+    name: text("name"),
+    age: text("age"),
+    mood: text("mood"),
   });
   
   export const accounts = sqliteTable(
